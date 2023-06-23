@@ -1,17 +1,25 @@
 // connect to the socket.io server
 const socket = io('http://localhost:3005');
 
-// listen for the 'slideChange' event emitted by the main controller
-socket.on('slideChange', (slideNumber) => {
-    // update the slide on the current device
-    goToSlide(slideNumber);
-});
+window.addEventListener('hashchange', handleHashChange);
 
-// emit the 'slideChange' event when the slide changes on the main controller
-function goToSlide(slideNumber) {
-    // update the slide on the main controller
-    // ...
-
-    // emit the 'slideChange' evenet to the server
+function handleHashChange() {
+    const slideNumber = getSlideNumberFromURL();
     socket.emit('slideChange', slideNumber);
 }
+
+function getSlideNumberFromURL() {
+    const url = window.location.href;
+    const slideNumber = url.split('#')[1] || '1';
+    return slideNumber;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const slideNumber = getSlideNumberFromURL();
+    socket.emit('slideChange', slideNumber);
+});
+
+socket.on('slideChange', (slideNumber) => {
+    const newURL = window.location.href.split('#')[0] + `#${slideNumber}`;
+    window.location.href = newURL;
+});
